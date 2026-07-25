@@ -20,11 +20,17 @@ pub fn list_monospace_families() -> Result<Vec<String>> {
     let stdout = String::from_utf8_lossy(&output.stdout);
     let mut families: BTreeSet<String> = BTreeSet::new();
     for line in stdout.lines() {
-        for family in line.split(',') {
-            let family = family.trim();
-            if !family.is_empty() && is_usable(family) {
-                families.insert(family.to_string());
-            }
+        // Each line can list comma-separated aliases for the same font file, e.g.
+        // "IBM Plex Mono,IBM Plex Mono ExtraLight" — the later names are per-weight
+        // aliases that fontconfig only style-links loosely (often reporting a bogus
+        // "Regular" style alongside the real one), so an exact family+style lookup
+        // against them fails. Only the first name is the true family; use that.
+        let Some(family) = line.split(',').next() else {
+            continue;
+        };
+        let family = family.trim();
+        if !family.is_empty() && is_usable(family) {
+            families.insert(family.to_string());
         }
     }
 
