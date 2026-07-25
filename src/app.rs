@@ -8,14 +8,13 @@ use ratatui::widgets::{Block, BorderType, Borders, List, ListItem, ListState, Pa
 use ratatui::DefaultTerminal;
 use std::time::{Duration, Instant};
 
-const BG: Color = Color::Rgb(10, 4, 24);
-const PANEL_BG: Color = Color::Rgb(16, 8, 36);
-const NEON_CYAN: Color = Color::Rgb(0, 255, 249);
-const NEON_MAGENTA: Color = Color::Rgb(255, 43, 214);
-const NEON_YELLOW: Color = Color::Rgb(247, 255, 0);
-const NEON_GREEN: Color = Color::Rgb(57, 255, 20);
-const DIM: Color = Color::Rgb(120, 110, 150);
-const FG: Color = Color::Rgb(220, 220, 240);
+const BG: Color = Color::Rgb(6, 14, 10);
+const PANEL_BG: Color = Color::Rgb(11, 24, 17);
+const GREEN_BRIGHT: Color = Color::Rgb(120, 235, 155);
+const GREEN_MID: Color = Color::Rgb(70, 170, 105);
+const GREEN_SOFT: Color = Color::Rgb(150, 210, 170);
+const DIM: Color = Color::Rgb(80, 115, 90);
+const FG: Color = Color::Rgb(200, 230, 210);
 
 pub enum Outcome {
     Committed(String),
@@ -177,19 +176,19 @@ impl App {
         .split(area);
 
         let title = Paragraph::new(Line::from(vec![
-            Span::styled("⟨⟨ ", Style::default().fg(NEON_MAGENTA)),
+            Span::styled("⟨⟨ ", Style::default().fg(GREEN_MID)),
             Span::styled(
                 "CRITTY FONTS",
                 Style::default()
-                    .fg(NEON_CYAN)
+                    .fg(GREEN_BRIGHT)
                     .add_modifier(Modifier::BOLD),
             ),
-            Span::styled(" ⟩⟩", Style::default().fg(NEON_MAGENTA)),
+            Span::styled(" ⟩⟩", Style::default().fg(GREEN_MID)),
             Span::raw("  "),
             Span::styled(
                 self.selected_family().unwrap_or("—").to_string(),
                 Style::default()
-                    .fg(NEON_YELLOW)
+                    .fg(GREEN_SOFT)
                     .add_modifier(Modifier::BOLD | Modifier::ITALIC),
             ),
         ]))
@@ -199,24 +198,24 @@ impl App {
             Block::default()
                 .borders(Borders::ALL)
                 .border_type(BorderType::Double)
-                .border_style(Style::default().fg(NEON_MAGENTA)),
+                .border_style(Style::default().fg(GREEN_MID)),
         );
         frame.render_widget(title, chunks[0]);
 
         let input = Paragraph::new(Line::from(vec![
-            Span::styled("❯ ", Style::default().fg(NEON_GREEN).add_modifier(Modifier::BOLD)),
-            Span::styled(self.query.as_str(), Style::default().fg(NEON_CYAN)),
-            Span::styled("▌", Style::default().fg(NEON_CYAN).add_modifier(Modifier::SLOW_BLINK)),
+            Span::styled("❯ ", Style::default().fg(GREEN_BRIGHT).add_modifier(Modifier::BOLD)),
+            Span::styled(self.query.as_str(), Style::default().fg(GREEN_SOFT)),
+            Span::styled("▌", Style::default().fg(GREEN_BRIGHT).add_modifier(Modifier::SLOW_BLINK)),
         ]))
         .style(Style::default().bg(PANEL_BG))
         .block(
             Block::default()
                 .borders(Borders::ALL)
                 .border_type(BorderType::Rounded)
-                .border_style(Style::default().fg(NEON_YELLOW))
+                .border_style(Style::default().fg(GREEN_MID))
                 .title(Span::styled(
                     " filter ",
-                    Style::default().fg(NEON_YELLOW).add_modifier(Modifier::BOLD),
+                    Style::default().fg(GREEN_MID).add_modifier(Modifier::BOLD),
                 )),
         );
         frame.render_widget(input, chunks[1]);
@@ -233,12 +232,12 @@ impl App {
                 Block::default()
                     .borders(Borders::ALL)
                     .border_type(BorderType::Rounded)
-                    .border_style(Style::default().fg(NEON_CYAN))
-                    .title(Span::styled(count_title, Style::default().fg(NEON_CYAN).add_modifier(Modifier::BOLD))),
+                    .border_style(Style::default().fg(GREEN_MID))
+                    .title(Span::styled(count_title, Style::default().fg(GREEN_BRIGHT).add_modifier(Modifier::BOLD))),
             )
             .highlight_style(
                 Style::default()
-                    .bg(NEON_MAGENTA)
+                    .bg(GREEN_BRIGHT)
                     .fg(Color::Black)
                     .add_modifier(Modifier::BOLD),
             )
@@ -246,11 +245,11 @@ impl App {
         frame.render_stateful_widget(list, chunks[2], &mut self.list_state);
 
         let footer = Line::from(vec![
-            Span::styled("↑/↓", Style::default().fg(NEON_YELLOW).add_modifier(Modifier::BOLD)),
+            Span::styled("↑/↓", Style::default().fg(GREEN_BRIGHT).add_modifier(Modifier::BOLD)),
             Span::styled(" preview live   ", Style::default().fg(DIM)),
-            Span::styled("Enter", Style::default().fg(NEON_GREEN).add_modifier(Modifier::BOLD)),
+            Span::styled("Enter", Style::default().fg(GREEN_BRIGHT).add_modifier(Modifier::BOLD)),
             Span::styled(" commit   ", Style::default().fg(DIM)),
-            Span::styled("Esc", Style::default().fg(NEON_MAGENTA).add_modifier(Modifier::BOLD)),
+            Span::styled("Esc", Style::default().fg(GREEN_SOFT).add_modifier(Modifier::BOLD)),
             Span::styled(" cancel", Style::default().fg(DIM)),
         ])
         .alignment(Alignment::Center);
