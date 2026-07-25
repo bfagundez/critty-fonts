@@ -2,6 +2,8 @@
 
 A fuzzy-search font picker for Alacritty, inspired by kitty's `kitten choose-fonts`.
 
+https://github.com/user-attachments/assets/3a69831e-722b-4fb7-a95a-2d085cfd7861
+
 Browse installed monospace fonts and preview them live in your actual Alacritty
 window as you move through the list, no restart needed.
 
