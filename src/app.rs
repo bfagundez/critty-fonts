@@ -4,9 +4,18 @@ use crossterm::event::{self, Event, KeyCode, KeyEventKind, KeyModifiers};
 use nucleo_matcher::pattern::{CaseMatching, Normalization, Pattern};
 use nucleo_matcher::{Matcher, Utf32Str};
 use ratatui::prelude::*;
-use ratatui::widgets::{Block, Borders, List, ListItem, ListState, Paragraph};
+use ratatui::widgets::{Block, BorderType, Borders, List, ListItem, ListState, Paragraph};
 use ratatui::DefaultTerminal;
 use std::time::{Duration, Instant};
+
+const BG: Color = Color::Rgb(10, 4, 24);
+const PANEL_BG: Color = Color::Rgb(16, 8, 36);
+const NEON_CYAN: Color = Color::Rgb(0, 255, 249);
+const NEON_MAGENTA: Color = Color::Rgb(255, 43, 214);
+const NEON_YELLOW: Color = Color::Rgb(247, 255, 0);
+const NEON_GREEN: Color = Color::Rgb(57, 255, 20);
+const DIM: Color = Color::Rgb(120, 110, 150);
+const FG: Color = Color::Rgb(220, 220, 240);
 
 pub enum Outcome {
     Committed(String),
@@ -157,24 +166,94 @@ impl App {
 
     fn draw(&mut self, frame: &mut Frame) {
         let area = frame.area();
-        let chunks = Layout::vertical([Constraint::Length(3), Constraint::Min(0)]).split(area);
+        frame.render_widget(Block::default().style(Style::default().bg(BG)), area);
 
-        let input = Paragraph::new(self.query.as_str())
-            .block(Block::default().borders(Borders::ALL).title("Filter"));
-        frame.render_widget(input, chunks[0]);
+        let chunks = Layout::vertical([
+            Constraint::Length(3),
+            Constraint::Length(3),
+            Constraint::Min(0),
+            Constraint::Length(1),
+        ])
+        .split(area);
+
+        let title = Paragraph::new(Line::from(vec![
+            Span::styled("⟨⟨ ", Style::default().fg(NEON_MAGENTA)),
+            Span::styled(
+                "CRITTY FONTS",
+                Style::default()
+                    .fg(NEON_CYAN)
+                    .add_modifier(Modifier::BOLD),
+            ),
+            Span::styled(" ⟩⟩", Style::default().fg(NEON_MAGENTA)),
+            Span::raw("  "),
+            Span::styled(
+                self.selected_family().unwrap_or("—").to_string(),
+                Style::default()
+                    .fg(NEON_YELLOW)
+                    .add_modifier(Modifier::BOLD | Modifier::ITALIC),
+            ),
+        ]))
+        .alignment(Alignment::Center)
+        .style(Style::default().bg(PANEL_BG))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_type(BorderType::Double)
+                .border_style(Style::default().fg(NEON_MAGENTA)),
+        );
+        frame.render_widget(title, chunks[0]);
+
+        let input = Paragraph::new(Line::from(vec![
+            Span::styled("❯ ", Style::default().fg(NEON_GREEN).add_modifier(Modifier::BOLD)),
+            Span::styled(self.query.as_str(), Style::default().fg(NEON_CYAN)),
+            Span::styled("▌", Style::default().fg(NEON_CYAN).add_modifier(Modifier::SLOW_BLINK)),
+        ]))
+        .style(Style::default().bg(PANEL_BG))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_type(BorderType::Rounded)
+                .border_style(Style::default().fg(NEON_YELLOW))
+                .title(Span::styled(
+                    " filter ",
+                    Style::default().fg(NEON_YELLOW).add_modifier(Modifier::BOLD),
+                )),
+        );
+        frame.render_widget(input, chunks[1]);
 
         let items: Vec<ListItem> = self
             .filtered
             .iter()
-            .map(|&i| ListItem::new(self.families[i].as_str()))
+            .map(|&i| ListItem::new(Span::styled(self.families[i].as_str(), Style::default().fg(FG))))
             .collect();
+        let count_title = format!(" {} font{} ", self.filtered.len(), if self.filtered.len() == 1 { "" } else { "s" });
         let list = List::new(items)
+            .style(Style::default().bg(BG))
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .title("Fonts (↑/↓ preview live · Enter commit · Esc cancel)"),
+                    .border_type(BorderType::Rounded)
+                    .border_style(Style::default().fg(NEON_CYAN))
+                    .title(Span::styled(count_title, Style::default().fg(NEON_CYAN).add_modifier(Modifier::BOLD))),
             )
-            .highlight_style(Style::default().add_modifier(Modifier::REVERSED));
-        frame.render_stateful_widget(list, chunks[1], &mut self.list_state);
+            .highlight_style(
+                Style::default()
+                    .bg(NEON_MAGENTA)
+                    .fg(Color::Black)
+                    .add_modifier(Modifier::BOLD),
+            )
+            .highlight_symbol("▶ ");
+        frame.render_stateful_widget(list, chunks[2], &mut self.list_state);
+
+        let footer = Line::from(vec![
+            Span::styled("↑/↓", Style::default().fg(NEON_YELLOW).add_modifier(Modifier::BOLD)),
+            Span::styled(" preview live   ", Style::default().fg(DIM)),
+            Span::styled("Enter", Style::default().fg(NEON_GREEN).add_modifier(Modifier::BOLD)),
+            Span::styled(" commit   ", Style::default().fg(DIM)),
+            Span::styled("Esc", Style::default().fg(NEON_MAGENTA).add_modifier(Modifier::BOLD)),
+            Span::styled(" cancel", Style::default().fg(DIM)),
+        ])
+        .alignment(Alignment::Center);
+        frame.render_widget(footer, chunks[3]);
     }
 }
