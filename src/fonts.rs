@@ -22,11 +22,17 @@ pub fn list_monospace_families() -> Result<Vec<String>> {
     for line in stdout.lines() {
         for family in line.split(',') {
             let family = family.trim();
-            if !family.is_empty() {
+            if !family.is_empty() && is_usable(family) {
                 families.insert(family.to_string());
             }
         }
     }
 
     Ok(families.into_iter().collect())
+}
+
+/// Filter out macOS's private system-UI faces (leading dot, e.g. ".SF NS Mono",
+/// ".LastResort") and emoji faces, none of which are meaningful terminal text fonts.
+fn is_usable(family: &str) -> bool {
+    !family.starts_with('.') && !family.to_lowercase().contains("emoji")
 }
